@@ -37,6 +37,7 @@ public class CatLambdas {
 
         Cat cat8 = max.get();
 
+
         Cat cat7 = cats.stream()
                 .max(Comparator.comparing(Cat::getDiameterOfNose)).get();
         System.out.println(cat7);
