@@ -1,6 +1,8 @@
 package com.company.multithreading.bank;
 
 import java.util.Random;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class BankWorking {
     public static void main(String[] args) throws InterruptedException {
@@ -23,26 +25,64 @@ class Broker {
     private Account acc1 = new Account();
     private Account acc2 = new Account();
 
+    private Lock lock1 = new ReentrantLock();
+    private Lock lock2 = new ReentrantLock();
+
+    public void takeLocks(Lock lock1, Lock lock2) {
+        boolean firstLockTaken = false;
+        boolean secondLockTaken = false;
+
+        while (true) {
+            try {
+                firstLockTaken = lock1.tryLock();
+                secondLockTaken = lock2.tryLock();
+            } finally {
+                if (firstLockTaken && secondLockTaken) {
+                    return;
+                }
+                if (firstLockTaken) {
+                    lock1.unlock();
+                }
+                if (secondLockTaken) {
+                    lock2.unlock();
+                }
+
+                try {
+                    Thread.sleep(1);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+
+
+
+    }
+
     public void firstThread() {
         Random randomAmount = new Random();
         for (int i = 0; i < 10000; i++) {
-//          synchronized (acc1) {
-//            synchronized (acc2) {
-                    Account.transfer(acc1, acc2, randomAmount.nextInt(0, 100));
-//                }
-//            }
+            takeLocks(lock1, lock2);
+            try {
+                Account.transfer(acc1, acc2, randomAmount.nextInt(0, 100));
+            } finally {
+                lock1.unlock();
+                lock2.unlock();
+            }
         }
-
     }
 
     public void secondThread() {
         Random randomAmount = new Random();
         for (int i = 0; i < 10000; i++) {
-//            synchronized (acc1) {
-//                synchronized (acc2) {
-                    Account.transfer(acc2, acc1, randomAmount.nextInt(0, 100));
-//                }
-//            }
+            takeLocks(lock2, lock1);
+            try {
+                Account.transfer(acc2, acc1, randomAmount.nextInt(0, 100));
+            } finally {
+                lock1.unlock();
+                lock2.unlock();
+            }
         }
     }
 
