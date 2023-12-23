@@ -10,6 +10,7 @@ import java.math.BigInteger;
 public class MathMain {
     private final static Logger logger = Logger.getLogger(MathMain.class);
     public static void main(String[] args) {
+
         logger.info("we are here");
 
         System.out.println(Math.pow(5, 3));
